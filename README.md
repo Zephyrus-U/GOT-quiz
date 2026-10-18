@@ -2,6 +2,8 @@
 
 A polished, dependency-free Game of Thrones / ASOIAF universe quiz built as a single HTML page.
 
+[Play the live quiz](https://zephyrus-u.github.io/GOT-quiz/)
+
 ## Features
 
 - 10 lore questions with score tracking
