@@ -255,6 +255,48 @@
       font-weight: 700;
     }
 
+    .answer-review {
+      margin: 0 0 26px;
+      display: grid;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .review-title {
+      margin: 0 0 2px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .review-item {
+      padding: 13px 15px;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--success);
+      border-radius: 11px;
+      background: var(--success-soft);
+    }
+
+    .review-item.incorrect {
+      border-left-color: var(--danger);
+      background: var(--danger-soft);
+    }
+
+    .review-question {
+      margin: 0 0 8px;
+      font-weight: 800;
+    }
+
+    .review-answer {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .review-answer strong {
+      color: var(--ink);
     .personal-best {
       margin: -12px auto 26px;
       color: var(--muted);
@@ -337,6 +379,9 @@
         <h2 id="result-title">A worthy ruler.</h2>
         <p class="results-copy" id="result-copy"></p>
         <div class="final-score">You scored <span id="final-score">0</span> out of 10</div>
+        <div class="answer-review" id="answer-review" aria-label="Answer review">
+          <p class="review-title">Answer review</p>
+        </div>
         <p class="personal-best">Personal best: <span id="personal-best">Not set yet</span></p>
         <button class="restart" id="restart" type="button">Play again</button>
       </section>
@@ -373,10 +418,12 @@
     const reactionEl = document.getElementById("reaction");
     const resultTitleEl = document.getElementById("result-title");
     const resultCopyEl = document.getElementById("result-copy");
+    const answerReviewEl = document.getElementById("answer-review");
     const restartButton = document.getElementById("restart");
     let currentQuestion = 0;
     let score = 0;
     let locked = false;
+    let selectedAnswers = [];
     let personalBest = loadPersonalBest();
 
     function loadPersonalBest() {
@@ -423,6 +470,7 @@
       if (locked) return;
       locked = true;
       const item = questions[currentQuestion];
+      selectedAnswers[currentQuestion] = selected;
       const buttons = [...answersEl.querySelectorAll(".answer")];
       buttons.forEach(button => button.disabled = true);
       buttons[item.correct].classList.add("correct");
@@ -450,6 +498,7 @@
       results.classList.add("visible");
       progressBarEl.style.width = "100%";
       finalScoreEl.textContent = score;
+      renderAnswerReview();
       if (personalBest === null || score > personalBest) {
         personalBest = score;
         savePersonalBest();
@@ -475,10 +524,44 @@
       }
     }
 
+    function renderAnswerReview() {
+      answerReviewEl.replaceChildren(answerReviewEl.querySelector(".review-title"));
+
+      questions.forEach((item, index) => {
+        const selected = selectedAnswers[index];
+        const isCorrect = selected === item.correct;
+        const reviewItem = document.createElement("article");
+        reviewItem.className = `review-item${isCorrect ? "" : " incorrect"}`;
+
+        const question = document.createElement("p");
+        question.className = "review-question";
+        question.textContent = `${index + 1}. ${item.question}`;
+
+        const selectedAnswer = document.createElement("p");
+        selectedAnswer.className = "review-answer";
+        selectedAnswer.append("Your answer: ");
+        const selectedText = document.createElement("strong");
+        selectedText.textContent = item.answers[selected];
+        selectedAnswer.appendChild(selectedText);
+
+        const correctAnswer = document.createElement("p");
+        correctAnswer.className = "review-answer";
+        correctAnswer.append("Correct answer: ");
+        const correctText = document.createElement("strong");
+        correctText.textContent = item.answers[item.correct];
+        correctAnswer.appendChild(correctText);
+
+        reviewItem.append(question, selectedAnswer, correctAnswer);
+        answerReviewEl.appendChild(reviewItem);
+      });
+    }
+
     function restart() {
       currentQuestion = 0;
       score = 0;
+      selectedAnswers = [];
       scoreEl.textContent = "0";
+      answerReviewEl.replaceChildren(answerReviewEl.querySelector(".review-title"));
       quiz.classList.remove("hidden");
       results.classList.remove("visible");
       renderQuestion();
