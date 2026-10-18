@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Oath &amp; Iron — A Song of Ice and Fire Quiz</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --paper: #fffdf8;
+      --paper-deep: #f4eee5;
+      --ink: #24211f;
+      --muted: #756d66;
+      --line: #e7ddd2;
+      --accent: #b32d35;
+      --accent-dark: #84232a;
+      --accent-soft: #f8e8e5;
+      --success: #28744b;
+      --success-soft: #e7f4eb;
+      --danger: #bd3d43;
+      --danger-soft: #fce8e7;
+      --shadow: 0 22px 60px rgba(55, 35, 22, .13);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #262321;
+        --paper-deep: #1d1b1a;
+        --ink: #f8f1e8;
+        --muted: #b6aaa0;
+        --line: #49413b;
+        --accent: #df6168;
+        --accent-dark: #ff858b;
+        --accent-soft: #49292b;
+        --success: #70c491;
+        --success-soft: #20382a;
+        --danger: #f37d7f;
+        --danger-soft: #452426;
+        --shadow: 0 22px 60px rgba(0, 0, 0, .35);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 28px 18px;
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 10%, rgba(179, 45, 53, .08), transparent 28rem),
+        var(--paper-deep);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .app {
+      width: min(100%, 570px);
+      overflow: hidden;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    header {
+      padding: 30px 32px 25px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 9px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 20px;
+      height: 1px;
+      background: currentColor;
+    }
+
+    h1, h2, p { margin-top: 0; }
+
+    h1 {
+      max-width: 400px;
+      margin-bottom: 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 7vw, 2.8rem);
+      letter-spacing: -.045em;
+      line-height: 1.03;
+    }
+
+    .subtitle {
+      max-width: 410px;
+      margin-bottom: 0;
+      color: var(--muted);
+    }
+
+    main { padding: 28px 32px 32px; }
+
+    .quiz-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .score {
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress-track {
+      height: 7px;
+      margin-bottom: 32px;
+      overflow: hidden;
+      background: var(--paper-deep);
+      border-radius: 999px;
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-dark), var(--accent), #ee8a78);
+      border-radius: inherit;
+      transition: width .45s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .question-number {
+      margin-bottom: 8px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin-bottom: 24px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.35rem, 4vw, 1.8rem);
+      line-height: 1.2;
+    }
+
+    .answers {
+      display: grid;
+      gap: 11px;
+    }
+
+    .answer {
+      width: 100%;
+      padding: 15px 17px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      color: var(--ink);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, transform .2s, box-shadow .2s;
+    }
+
+    .answer:hover:not(:disabled), .answer:focus-visible {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      outline: none;
+      transform: translateY(-2px);
+      box-shadow: 0 7px 18px rgba(179, 45, 53, .1);
+    }
+
+    .answer:disabled { cursor: default; }
+
+    .answer-letter {
+      width: 27px;
+      height: 27px;
+      flex: 0 0 27px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .answer.correct {
+      color: var(--success);
+      background: var(--success-soft);
+      border-color: var(--success);
+      animation: pop .35s ease-out;
+    }
+
+    .answer.correct .answer-letter { color: var(--success); border-color: var(--success); }
+    .answer.wrong { color: var(--danger); background: var(--danger-soft); border-color: var(--danger); animation: shake .4s ease-in-out; }
+    .answer.wrong .answer-letter { color: var(--danger); border-color: var(--danger); }
+
+    .feedback {
+      min-height: 28px;
+      padding-top: 18px;
+      color: var(--muted);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .feedback.correct-text { color: var(--success); }
+    .feedback.wrong-text { color: var(--danger); }
+
+    .results {
+      display: none;
+      padding: 4px 0 2px;
+      text-align: center;
+      animation: rise .5s ease-out;
+    }
+
+    .results.visible { display: block; }
+    .quiz.hidden { display: none; }
+
+    .reaction {
+      margin: 4px 0 11px;
+      font-size: 68px;
+      line-height: 1;
+      filter: drop-shadow(0 8px 10px rgba(90, 54, 35, .14));
+    }
+
+    .results h2 { margin-bottom: 8px; }
+    .results-copy { margin: 0 auto 24px; max-width: 380px; color: var(--muted); }
+
+    .final-score {
+      margin: 0 auto 26px;
+      padding: 16px;
+      background: var(--accent-soft);
+      border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+      border-radius: 14px;
+      color: var(--accent);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .restart {
+      padding: 13px 20px;
+      color: #fff;
+      background: var(--accent);
+      border: 0;
+      border-radius: 10px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+
+    .restart:hover, .restart:focus-visible { background: var(--accent-dark); outline: none; transform: translateY(-2px); }
+
+    footer {
+      padding: 15px 32px 21px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+
+    @keyframes pop {
+      0% { transform: scale(.98); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 0; }
+      .app { min-height: 100vh; border: 0; border-radius: 0; }
+      header, main { padding-left: 22px; padding-right: 22px; }
+      footer { padding-left: 22px; padding-right: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <p class="eyebrow">Oath &amp; Iron</p>
+      <h1>How well do you know the Seven Kingdoms?</h1>
+      <p class="subtitle">Ten questions for those who remember every oath, betrayal, and dragon.</p>
+    </header>
+
+    <main>
+      <section class="quiz" id="quiz" aria-live="polite">
+        <div class="quiz-meta">
+          <span id="progress-label">Question 1 of 10</span>
+          <span class="score">Score: <span id="score">0</span></span>
+        </div>
+        <div class="progress-track" aria-label="Quiz progress">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="question-number" id="question-number">Question 01</div>
+        <h2 id="question"></h2>
+        <div class="answers" id="answers"></div>
+        <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="results" id="results" aria-live="polite">
+        <div class="reaction" id="reaction" aria-hidden="true">👑</div>
+        <h2 id="result-title">A worthy ruler.</h2>
+        <p class="results-copy" id="result-copy"></p>
+        <div class="final-score">You scored <span id="final-score">0</span> out of 10</div>
+        <button class="restart" id="restart" type="button">Play again</button>
+      </section>
+    </main>
+
+    <footer>Built for curious minds beyond the Wall.</footer>
+  </div>
+
+  <script>
+    const questions = [
+      { question: "What is the name of Arya Stark's sword?", answers: ["Needle", "Longclaw", "Ice", "Heartsbane"], correct: 0 },
+      { question: "Which house uses the words “Winter is Coming”?", answers: ["House Targaryen", "House Stark", "House Baratheon", "House Tyrell"], correct: 1 },
+      { question: "What is the capital city of the Seven Kingdoms?", answers: ["Winterfell", "Oldtown", "King's Landing", "Casterly Rock"], correct: 2 },
+      { question: "Who was known as the Mother of Dragons?", answers: ["Cersei Lannister", "Sansa Stark", "Daenerys Targaryen", "Melisandre"], correct: 2 },
+      { question: "What is the name of Jon Snow's direwolf?", answers: ["Grey Wind", "Summer", "Ghost", "Shaggydog"], correct: 2 },
+      { question: "Which material can kill a White Walker?", answers: ["Valyrian steel", "Dragonglass", "Both of these", "Gold"], correct: 2 },
+      { question: "Who sits on the Iron Throne at the beginning of the story?", answers: ["Robert Baratheon", "Ned Stark", "Tywin Lannister", "Renly Baratheon"], correct: 0 },
+      { question: "What is Tyrion Lannister's favorite drink?", answers: ["Ale", "Wine", "Milk", "Mead"], correct: 1 },
+      { question: "Which city is home to the Night's Watch?", answers: ["The Eyrie", "The Citadel", "Castle Black", "Harrenhal"], correct: 2 },
+      { question: "What is the name of the great sword wielded by Ned Stark?", answers: ["Oathkeeper", "Widow's Wail", "Ice", "Dawn"], correct: 2 }
+    ];
+
+    const quiz = document.getElementById("quiz");
+    const results = document.getElementById("results");
+    const questionEl = document.getElementById("question");
+    const questionNumberEl = document.getElementById("question-number");
+    const progressLabelEl = document.getElementById("progress-label");
+    const progressBarEl = document.getElementById("progress-bar");
+    const answersEl = document.getElementById("answers");
+    const feedbackEl = document.getElementById("feedback");
+    const scoreEl = document.getElementById("score");
+    const finalScoreEl = document.getElementById("final-score");
+    const reactionEl = document.getElementById("reaction");
+    const resultTitleEl = document.getElementById("result-title");
+    const resultCopyEl = document.getElementById("result-copy");
+    const restartButton = document.getElementById("restart");
+    let currentQuestion = 0;
+    let score = 0;
+    let locked = false;
+
+    function renderQuestion() {
+      const item = questions[currentQuestion];
+      locked = false;
+      questionNumberEl.textContent = `Question ${String(currentQuestion + 1).padStart(2, "0")}`;
+      progressLabelEl.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+      progressBarEl.style.width = `${(currentQuestion / questions.length) * 100}%`;
+      questionEl.textContent = item.question;
+      answersEl.innerHTML = "";
+      feedbackEl.textContent = "";
+      feedbackEl.className = "feedback";
+
+      item.answers.forEach((answer, index) => {
+        const button = document.createElement("button");
+        button.className = "answer";
+        button.type = "button";
+        button.innerHTML = `<span class="answer-letter">${String.fromCharCode(65 + index)}</span><span>${answer}</span>`;
+        button.addEventListener("click", () => chooseAnswer(index, button));
+        answersEl.appendChild(button);
+      });
+    }
+
+    function chooseAnswer(selected, selectedButton) {
+      if (locked) return;
+      locked = true;
+      const item = questions[currentQuestion];
+      const buttons = [...answersEl.querySelectorAll(".answer")];
+      buttons.forEach(button => button.disabled = true);
+      buttons[item.correct].classList.add("correct");
+
+      if (selected === item.correct) {
+        score++;
+        scoreEl.textContent = score;
+        feedbackEl.textContent = "Correct — the realm remembers.";
+        feedbackEl.className = "feedback correct-text";
+      } else {
+        selectedButton.classList.add("wrong");
+        feedbackEl.textContent = `Not quite — the answer was ${item.answers[item.correct]}.`;
+        feedbackEl.className = "feedback wrong-text";
+      }
+
+      window.setTimeout(() => {
+        currentQuestion++;
+        if (currentQuestion < questions.length) renderQuestion();
+        else showResults();
+      }, 950);
+    }
+
+    function showResults() {
+      quiz.classList.add("hidden");
+      results.classList.add("visible");
+      progressBarEl.style.width = "100%";
+      finalScoreEl.textContent = score;
+      const ratio = score / questions.length;
+      if (ratio === 1) {
+        reactionEl.textContent = "👑";
+        resultTitleEl.textContent = "The crown is yours.";
+        resultCopyEl.textContent = "A flawless performance. Even the maesters would be impressed.";
+      } else if (ratio >= .7) {
+        reactionEl.textContent = "🐺";
+        resultTitleEl.textContent = "A true Stark of the mind.";
+        resultCopyEl.textContent = "Strong work, traveler. Your knowledge would earn a place at the council table.";
+      } else if (ratio >= .4) {
+        reactionEl.textContent = "🐉";
+        resultTitleEl.textContent = "The fire still burns.";
+        resultCopyEl.textContent = "A respectable showing. One more watch of the histories may win you the throne.";
+      } else {
+        reactionEl.textContent = "🫖";
+        resultTitleEl.textContent = "The ravens brought troubling news.";
+        resultCopyEl.textContent = "The realm is full of surprises. Take another turn and sharpen your wits.";
+      }
+    }
+
+    function restart() {
+      currentQuestion = 0;
+      score = 0;
+      scoreEl.textContent = "0";
+      quiz.classList.remove("hidden");
+      results.classList.remove("visible");
+      renderQuestion();
+    }
+
+    restartButton.addEventListener("click", restart);
+    renderQuestion();
+  </script>
+</body>
+</html>
