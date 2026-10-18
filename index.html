@@ -297,6 +297,11 @@
 
     .review-answer strong {
       color: var(--ink);
+    .personal-best {
+      margin: -12px auto 26px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
     }
 
     .restart {
@@ -377,6 +382,7 @@
         <div class="answer-review" id="answer-review" aria-label="Answer review">
           <p class="review-title">Answer review</p>
         </div>
+        <p class="personal-best">Personal best: <span id="personal-best">Not set yet</span></p>
         <button class="restart" id="restart" type="button">Play again</button>
       </section>
     </main>
@@ -408,6 +414,7 @@
     const feedbackEl = document.getElementById("feedback");
     const scoreEl = document.getElementById("score");
     const finalScoreEl = document.getElementById("final-score");
+    const personalBestEl = document.getElementById("personal-best");
     const reactionEl = document.getElementById("reaction");
     const resultTitleEl = document.getElementById("result-title");
     const resultCopyEl = document.getElementById("result-copy");
@@ -417,6 +424,26 @@
     let score = 0;
     let locked = false;
     let selectedAnswers = [];
+    let personalBest = loadPersonalBest();
+
+    function loadPersonalBest() {
+      try {
+        const storedScore = Number.parseInt(window.localStorage.getItem("got-quiz-personal-best"), 10);
+        return Number.isInteger(storedScore) && storedScore >= 0 && storedScore <= questions.length
+          ? storedScore
+          : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function savePersonalBest() {
+      try {
+        window.localStorage.setItem("got-quiz-personal-best", String(personalBest));
+      } catch (error) {
+        // Local storage can be unavailable for some browser file URL settings.
+      }
+    }
 
     function renderQuestion() {
       const item = questions[currentQuestion];
@@ -472,6 +499,11 @@
       progressBarEl.style.width = "100%";
       finalScoreEl.textContent = score;
       renderAnswerReview();
+      if (personalBest === null || score > personalBest) {
+        personalBest = score;
+        savePersonalBest();
+      }
+      personalBestEl.textContent = `${personalBest} out of ${questions.length}`;
       const ratio = score / questions.length;
       if (ratio === 1) {
         reactionEl.textContent = "👑";
